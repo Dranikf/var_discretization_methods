@@ -27,9 +27,9 @@ class kmeans_ranges():
             for different number of clusters.
             
             inputs:
-                var_range - numpy.array wiht shape (:, 1) 
+                var_range - numpy.array with shape (1,) 
                             the range which will used for fitting
-            outputs:
+            output:
                 list of sklearn.cluster.kmeans instances for different
                 count of clusters. The same object is placed at the
                 self.kmeans_insts.
@@ -51,12 +51,12 @@ class kmeans_ranges():
 
             self.kmeans_insts.append(KMeans(
                 **self.kmeans_kwarg
-            ).fit(var_range))
+            ).fit(var_range[:, np.newaxis]))
 
         self.SSE_arr = np.array(
             [kmean_inst.inertia_ for kmean_inst in self.kmeans_insts])
             
-        return self.kmeans_insts
+        return self
         
     
     def elbow_choose(self):
@@ -65,12 +65,12 @@ class kmeans_ranges():
             If between i and i-1 cluster num we gets the most relative
             decreasing of SSE thet i is the best count of clusters.
             
-            result - the best clusters number to choose accordig to the
+            output:  the best clusters number to choose accordig to the
                      elbow method for kmeans algorithm. The same value
                      contains in self.best_idx variable.
         '''
         self.best_idx = np.argmax(self.SSE_arr[0:-1]/self.SSE_arr[1:None]) + 1
-        return self.best_idx
+        return self
     
     
     def init_bins(self, var_range):
@@ -81,17 +81,17 @@ class kmeans_ranges():
             in numpy.digitize for getted range.
             
             Inputs:
-                var_range - is range which the farthest upwards from 
+                var_range - numpy.array with shape (1,) 
                             centroid values will used as a bins.
         '''
         
-        y_hat = self.kmeans_insts[self.best_idx].predict(var_range)
+        y_hat = self.kmeans_insts[self.best_idx].predict(var_range[:, np.newaxis])
         self.bins = []
                 
         for cluster_mark in np.unique(y_hat)[0:-1]:
             self.bins.append(np.max(var_range[y_hat == cluster_mark]))
             
-        return self.bins
+        return self
             
     
         
@@ -103,13 +103,15 @@ class kmeans_ranges():
             creating bins for discretization in predict method.
         
             inputs:
-                var_range - numpy.array with shape (:, 1) 
+                var_range - numpy.array with shape (1,) 
                             the range which will used for fitting
         '''
         
         self.build_kmeans_instances(var_range)
         self.elbow_choose()
         self.init_bins(var_range)
+        
+        return self
         
         
     
@@ -118,8 +120,8 @@ class kmeans_ranges():
             Transforms input series with fitted above discretisator.
             
             Inputs:
-                var_range - numpy.array with shape (:, 1) 
-                            the range which will used for fitting
+                var_range - numpy.array with shape (1,) 
+                            the range which will used for transforming
         '''
         
         def get_bin_line(ind):
@@ -136,13 +138,15 @@ class kmeans_ranges():
             map(get_bin_line, np.digitize(var_range, self.bins).ravel())
         ))
     
+    
+    
     def fit_transform(self, var_range):
         '''
             Applies fit and trainsform methods to the given data range.
             
             Inputs:
-                var_range - numpy.array with shape (:, 1) 
-                            the range which will used for fitting
+                var_range - numpy.array with shape (1,) 
+                            the range which will used for fitting and trainsforming
         '''
         
         self.fit(var_range)
