@@ -25,14 +25,13 @@ class kmeans_ranges():
         '''
             Creates and initialise sklearn.cluster.kmeans instances
             for different number of clusters.
+             list of sklearn.cluster.kmeans instances for different
+            count of clusters. The same object is placed at the
+            self.kmeans_insts.
             
             inputs:
                 var_range - numpy.array with shape (1,) 
                             the range which will used for fitting
-            output:
-                list of sklearn.cluster.kmeans instances for different
-                count of clusters. The same object is placed at the
-                self.kmeans_insts.
         '''
         
         self.kmeans_insts = []
