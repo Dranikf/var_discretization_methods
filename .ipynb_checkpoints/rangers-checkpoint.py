@@ -1,9 +1,45 @@
-from sklearn.cluster import KMeans
 import numpy as np
+from sklearn.cluster import KMeans
+
+from common import encode_as_lines
+from sklearn.metrics import roc_curve
+
+#---------------simple methods in one function---------------------------
+def to_binary_by_KS(X, y):
+    '''
+        Recodes the input row as to classes by point corresponds to KS stat.
+        Look idea description at simple_methods.ipynb.
+        Inputs:
+            X - np.array of shape (n_sample, ), the series which should be encoded;
+            y - np.array of shape (n_sample, ), the classes of observations.
+        Output
+            np.array of shape (n_sample, ) which desribes ranges as 
+            (-inf, KS_point] (KS_point, inf)
+    '''
+    
+    var_min = np.min(X)
+    var_max = np.max(X)
+    
+    tpr, fpr, thresholds = \
+       (res[1:] for res in roc_curve(y, (X - var_min)/(var_max - var_min)))
+
+    F_p = 1 - tpr
+    F_n = 1 - fpr
+    
+    KS_ind = np.argmax(np.abs(fpr - tpr))
+    
+    bins = np.array([thresholds[KS_ind]*(var_max - var_min) + var_min])
+    return encode_as_lines(X, bins)
+#------------------------------------------------------------------------
+
+
+
 
 class kmeans_ranges():
     '''
-        Applying the kmeans algorithm for 1 dimention data wich helps divide data into ranges.
+        Applying the kmeans algorithm for 1 dimention data 
+        wich helps divide data into ranges.
+        Look idea description at disk_kmeans_example.ipynb
     '''
     
     
@@ -25,6 +61,9 @@ class kmeans_ranges():
         '''
             Creates and initialise sklearn.cluster.kmeans instances
             for different number of clusters.
+             list of sklearn.cluster.kmeans instances for different
+            count of clusters. The same object is placed at the
+            self.kmeans_insts.
             
             inputs:
                 var_range - numpy.array with shape (1,) 
@@ -119,20 +158,7 @@ class kmeans_ranges():
                 var_range - numpy.array with shape (1,) 
                             the range which will used for transforming
         '''
-        
-        def get_bin_line(ind):
-            if ind <= 0:
-                return "(-inf, " + str(self.bins[ind]) + ")"
-            if ind >= len(self.bins):
-                return "[" + str(self.bins[ind - 1]) +  ",inf)"
-            
-            return "[" + str(self.bins[ind - 1]) +\
-                    "," + str(self.bins[ind]) + ")"
-            
-        
-        return np.array(list(
-            map(get_bin_line, np.digitize(var_range, self.bins).ravel())
-        ))
+        return encode_as_lines(var_range, self.bins)
     
     
     
