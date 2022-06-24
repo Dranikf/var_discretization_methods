@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.cluster import KMeans
 
-from common import encode_as_lines
+from var_disc_common import encode_as_lines
 from sklearn.metrics import roc_curve
 
 #---------------simple methods in one function---------------------------
