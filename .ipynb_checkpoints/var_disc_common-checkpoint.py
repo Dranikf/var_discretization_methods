@@ -19,16 +19,23 @@ def get_bin_line(ind, bins):
     return "[" + str(bins[ind - 1]) +\
             "," + str(bins[ind]) + ")"
 
-def encode_as_lines(x, bins):
+def encode_as_lines(x, bins, save_na = True):
     '''
     Transforms numeric array to lines which marks bins.
     Inputs:
         x - np.array with shape (n_sample, ), array to be transformed;
-        bins - np.array with shape (n_bins, ), bins which divides one range from another.
+        bins - np.array with shape (n_bins, ), bins which divides one range from another;
+        save_na - bool if True saves the np.NaN value from range x, else acts as np.digitise
+                  i.e. NaNs belong to the latter range.
     Output
         np.array fo shape (n_sample, ), transformed x range.
     '''
     
-    return np.array(list(
+    res = np.array(list(
         map(lambda ind: get_bin_line(ind, bins), np.digitize(x, bins).ravel())
     ))
+    
+    if save_na:
+        res[np.isnan(x)] = np.NaN
+    
+    return res

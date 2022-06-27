@@ -17,11 +17,14 @@ def to_binary_by_KS(X, y):
             (-inf, KS_point] (KS_point, inf)
     '''
     
+    na_X_cond = np.isnan(X)
     var_min = np.min(X)
     var_max = np.max(X)
     
     tpr, fpr, thresholds = \
-       (res[1:] for res in roc_curve(y, (X - var_min)/(var_max - var_min)))
+       (res[1:] for res in roc_curve(y[~na_X_cond], 
+                                     (X[~na_X_cond] - var_min)/(var_max - var_min))
+       )
 
     F_p = 1 - tpr
     F_n = 1 - fpr
